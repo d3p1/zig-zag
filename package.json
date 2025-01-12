@@ -1,6 +1,6 @@
 {
   "name": "@d3p1/zig-zag",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "A zig zag game to improve my JS skills",
   "private": true,
   "type": "module",
