@@ -1,9 +1,6 @@
 /**
  * @description Track
  * @author      C. M. de Picciotto <d3p1@d3p1.dev> (https://d3p1.dev/)
- * @todo        Analyze if it is better to handle all logic related
- *              to the track and the player inside the game entity
- *              that works as a manager
  */
 import Path from './track/path.js'
 
@@ -16,12 +13,12 @@ export default class Track {
   /**
    * @type {number}
    */
-  pathWidth
+  pathLongSide
 
   /**
    * @type {number}
    */
-  pathHeight
+  pathShortSide
 
   /**
    * @type {Path[]}
@@ -51,13 +48,13 @@ export default class Track {
    * Constructor
    *
    * @param {number} pathCount
-   * @param {number} pathWidth
-   * @param {number} pathHeight
+   * @param {number} pathLongSide
+   * @param {number} pathShortSide
    */
-  constructor(pathCount, pathWidth, pathHeight) {
+  constructor(pathCount, pathLongSide, pathShortSide) {
     this.pathCount = pathCount
-    this.pathWidth = pathWidth
-    this.pathHeight = pathHeight
+    this.pathLongSide = pathLongSide
+    this.pathShortSide = pathShortSide
 
     this.#buildPath()
   }
@@ -65,17 +62,11 @@ export default class Track {
   /**
    * Update
    *
-   * @param   {number} currentPlayerPathIndex
    * @returns {void}
    */
-  update(currentPlayerPathIndex) {
-    if (
-      this.pathCollection.length &&
-      currentPlayerPathIndex > Math.floor(this.pathCollection.length / 2) - 1
-    ) {
-      this.#createPath()
-      this.#dequeuePath()
-    }
+  update() {
+    this.#enqueuePath()
+    this.#dequeuePath()
   }
 
   /**
@@ -91,61 +82,36 @@ export default class Track {
   }
 
   /**
-   * Check if player is on track.
-   * If player is contained by one path element, then it is considered on track
-   *
-   * @param   {Player}       player
-   * @returns {number|false}
-   */
-  isPlayerOnTrack(player) {
-    for (let i = 0; i < this.pathCollection.length; i++) {
-      const path = this.pathCollection[i]
-      if (path.isPlayerContained(player)) {
-        return i
-      }
-    }
-    return false
-  }
-
-  /**
    * Build path
    *
    * @returns {void}
    */
   #buildPath() {
     for (let i = 0; i < this.pathCount; i++) {
-      this.#createPath()
-    }
-  }
-
-  /**
-   * Create path
-   *
-   * @returns {void}
-   */
-  #createPath() {
-    if (!(this.#index % 2)) {
-      const [pathWidth, pathHeight] = [this.pathWidth, this.pathHeight]
-      const path = new Path(pathWidth, pathHeight, this.#x, this.#y)
-      this.#x += pathWidth - pathHeight
-      this.#enqueuePath(path)
-    } else {
-      const [pathWidth, pathHeight] = [this.pathHeight, this.pathWidth]
-      const path = new Path(pathWidth, pathHeight, this.#x, this.#y)
-      this.#y += pathHeight - pathWidth
-      this.#enqueuePath(path)
+      this.#enqueuePath()
     }
   }
 
   /**
    * Enqueue path
    *
-   * @param   {Path} path
    * @returns {void}
-   * @todo    Improve the cohesion between this method
-   *          and the create path method
    */
-  #enqueuePath(path) {
+  #enqueuePath() {
+    let path
+    let pathWidth
+    let pathHeight
+
+    if (!(this.#index % 2)) {
+      ;[pathWidth, pathHeight] = [this.pathLongSide, this.pathShortSide]
+      path = new Path(pathWidth, pathHeight, this.#x, this.#y)
+      this.#x += pathWidth - pathHeight
+    } else {
+      ;[pathWidth, pathHeight] = [this.pathShortSide, this.pathLongSide]
+      path = new Path(pathWidth, pathHeight, this.#x, this.#y)
+      this.#y += pathHeight - pathWidth
+    }
+
     this.pathCollection.push(path)
     this.#index++
   }

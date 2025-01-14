@@ -2,13 +2,6 @@
  * @description Player
  * @author      C. M. de Picciotto <d3p1@d3p1.dev> (https://d3p1.dev/)
  */
-
-/**
- * @todo For now, it is created this constants to
- *       determine player displacement direction.
- *       Improve this way of handle displacement direction
- * @see  Player.changeDirection()
- */
 const DIRECTION_X = 'DIRECTION_X'
 const DIRECTION_Y = 'DIRECTION_Y'
 

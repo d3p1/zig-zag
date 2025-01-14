@@ -1,8 +1,12 @@
+/* eslint-disable no-unused-vars */
 /**
  * @description Game
  * @author      C. M. de Picciotto <d3p1@d3p1.dev> (https://d3p1.dev/)
+ * @note        For now, this entity works as a manager that handles
+ *              interactions between the track and the player entities
  */
 import Track from './game/track.js'
+import TrackPath from './game/track/path.js'
 import Player from './game/player.js'
 
 export default class Game {
@@ -59,11 +63,16 @@ export default class Game {
   update(deltaTime) {
     this.player.update(deltaTime)
 
-    const pathIndex = this.track.isPlayerOnTrack(this.player)
+    const pathIndex = this.#isPlayerOnTrack()
     if (pathIndex === false) {
       this.isGameOver = true
     } else {
-      this.track.update(pathIndex)
+      if (
+        this.track.pathCollection.length &&
+        pathIndex > Math.floor(this.track.pathCollection.length / 2) - 1
+      ) {
+        this.track.update()
+      }
     }
   }
 
@@ -95,15 +104,50 @@ export default class Game {
   }
 
   /**
+   * Check if player is on track.
+   * If player is contained by one path element, then it is considered on track
+   *
+   * @returns {number|false}
+   */
+  #isPlayerOnTrack() {
+    for (let i = 0; i < this.track.pathCollection.length; i++) {
+      if (this.#isPlayerContainedInTrackPath(this.track.pathCollection[i])) {
+        return i
+      }
+    }
+    return false
+  }
+
+  /**
+   * Check if player is contained in track path
+   *
+   * @param   {TrackPath} path
+   * @returns {boolean}
+   */
+  #isPlayerContainedInTrackPath(path) {
+    const left = path.x + this.player.radius
+    const right = path.x + path.width - this.player.radius
+    const top = path.y + this.player.radius
+    const bottom = path.y + path.height - this.player.radius
+
+    return (
+      this.player.x >= left &&
+      this.player.x <= right &&
+      this.player.y >= top &&
+      this.player.y <= bottom
+    )
+  }
+
+  /**
    * Init player
    *
    * @returns {void}
    */
   #initPlayer() {
     this.player = new Player(
-      this.track.pathHeight * 0.2,
-      this.track.pathHeight * 0.5,
-      this.track.pathHeight * 0.5,
+      this.track.pathShortSide * 0.2,
+      this.track.pathShortSide * 0.5,
+      this.track.pathShortSide * 0.5,
     )
 
     this.#boundPlayerChangeDirection = () => {
